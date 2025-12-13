@@ -7,6 +7,6 @@ import (
 )
 
 func StartWebclient() *rod.Browser {
-	browser := rod.New().Timeout(time.Minute).MustConnect()
-	return browser
+
+	return rod.New().Timeout(time.Minute).MustConnect()
 }
