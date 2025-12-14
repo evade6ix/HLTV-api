@@ -42,7 +42,7 @@ func ExtractInfFromHTML(html string) (data []models.Results, err error) {
 			bo := r.Find(".map-text").First().Text()
 
 			match := models.Results{
-				MatchUrl: fmt.Sprintf("https://www.hltv.org/%v", matchUrl),
+				MatchUrl: fmt.Sprintf("https://www.hltv.org%v", matchUrl),
 				Team1: models.Team{
 					Name:    team1Name,
 					WonMaps: wonScore,
