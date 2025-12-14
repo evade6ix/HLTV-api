@@ -14,6 +14,7 @@ type MapResult struct {
 	MapName string
 	Team1   TeamResult
 	Team2   TeamResult
+	Url     string
 }
 
 type Player struct {

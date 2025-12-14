@@ -1,6 +1,7 @@
 package match
 
 import (
+	"fmt"
 	"hltv/models"
 	"regexp"
 	"strconv"
@@ -90,7 +91,15 @@ func ExtractMapsResultData(html string) (data []models.MapResult, err error) {
 	doc.Find(".flexbox-column .mapholder").Each(func(i int, mapholder *goquery.Selection) {
 
 		var result models.MapResult
+		link := mapholder.
+			Find(".results-center .results-center-stats a.results-stats").
+			First()
 
+		href, ok := link.Attr("href")
+		if !ok {
+			return
+		}
+		result.Url = fmt.Sprintf("https://www.hltv.org%v", href)
 		result.MapName = strings.TrimSpace(
 			mapholder.Find(".mapname").First().Text(),
 		)
