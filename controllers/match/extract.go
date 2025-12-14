@@ -29,48 +29,54 @@ func ExtractMapsStats(html string) ([]models.TeamStats, error) {
 
 	var teams []models.TeamStats
 
-	doc.Find(".stats-content table.table.totalstats").Each(func(i int, table *goquery.Selection) {
-		var team models.TeamStats
+	doc.Find(".stats-content table.table.totalstats").EachWithBreak(
+		func(i int, table *goquery.Selection) bool {
 
-		team.TeamName = strings.TrimSpace(
-			table.Find(".header-row .teamName").First().Text(),
-		)
-		table.Find("tr").Each(func(i int, row *goquery.Selection) {
-			if row.HasClass("header-row") {
-				return
-			}
+			var team models.TeamStats
 
-			var player models.Player
-
-			player.PlayerName = strings.TrimSpace(
-				row.Find(".player-nick").First().Text(),
+			team.TeamName = strings.TrimSpace(
+				table.Find(".header-row .teamName").First().Text(),
 			)
 
-			player.KD = strings.TrimSpace(
-				row.Find("td.kd.traditional-data").First().Text(),
-			)
+			table.Find("tr").Each(func(i int, row *goquery.Selection) {
+				if row.HasClass("header-row") {
+					return
+				}
 
-			player.Swing = parsePercent(
-				row.Find("td.roundSwing").First().Text(),
-			)
+				var player models.Player
 
-			player.ADR = parseFloat(
-				row.Find("td.adr.traditional-data").First().Text(),
-			)
+				player.PlayerName = strings.TrimSpace(
+					row.Find(".player-nick").First().Text(),
+				)
 
-			player.KAST = parsePercent(
-				row.Find("td.kast.traditional-data").First().Text(),
-			)
+				player.KD = strings.TrimSpace(
+					row.Find("td.kd.traditional-data").First().Text(),
+				)
 
-			player.Rating30 = parseFloat(
-				row.Find("td.rating").First().Text(),
-			)
+				player.Swing = parseFloat(
+					row.Find("td.roundSwing").First().Text(),
+				)
 
-			team.PlayersStats = append(team.PlayersStats, player)
-		})
+				player.ADR = parseFloat(
+					row.Find("td.adr.traditional-data").First().Text(),
+				)
 
-		teams = append(teams, team)
-	})
+				player.KAST = parseFloat(
+					row.Find("td.kast.traditional-data").First().Text(),
+				)
+
+				player.Rating30 = parseFloat(
+					row.Find("td.rating").First().Text(),
+				)
+
+				team.PlayersStats = append(team.PlayersStats, player)
+			})
+
+			teams = append(teams, team)
+
+			return len(teams) < 2
+		},
+	)
 
 	return teams, nil
 }
