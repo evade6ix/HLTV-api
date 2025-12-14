@@ -3,10 +3,77 @@ package match
 import (
 	"hltv/models"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+func parseFloat(val string) float64 {
+	val = strings.TrimSpace(val)
+	val = strings.ReplaceAll(val, "%", "")
+	val = strings.ReplaceAll(val, "+", "")
+
+	f, _ := strconv.ParseFloat(val, 64)
+	return f
+}
+
+func parsePercent(val string) float64 {
+	return parseFloat(val)
+}
+func ExtractMapsStats(html string) ([]models.TeamStats, error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		return nil, err
+	}
+
+	var teams []models.TeamStats
+
+	doc.Find(".stats-content table.table.totalstats").Each(func(i int, table *goquery.Selection) {
+		var team models.TeamStats
+
+		team.TeamName = strings.TrimSpace(
+			table.Find(".header-row .teamName").First().Text(),
+		)
+		table.Find("tr").Each(func(i int, row *goquery.Selection) {
+			if row.HasClass("header-row") {
+				return
+			}
+
+			var player models.Player
+
+			player.PlayerName = strings.TrimSpace(
+				row.Find(".player-nick").First().Text(),
+			)
+
+			player.KD = strings.TrimSpace(
+				row.Find("td.kd.traditional-data").First().Text(),
+			)
+
+			player.Swing = parsePercent(
+				row.Find("td.roundSwing").First().Text(),
+			)
+
+			player.ADR = parseFloat(
+				row.Find("td.adr.traditional-data").First().Text(),
+			)
+
+			player.KAST = parsePercent(
+				row.Find("td.kast.traditional-data").First().Text(),
+			)
+
+			player.Rating30 = parseFloat(
+				row.Find("td.rating").First().Text(),
+			)
+
+			team.PlayersStats = append(team.PlayersStats, player)
+		})
+
+		teams = append(teams, team)
+	})
+
+	return teams, nil
+}
 
 func ExtractMapsResultData(html string) (data []models.MapResult, err error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))

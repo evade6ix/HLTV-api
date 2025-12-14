@@ -32,17 +32,30 @@ func ExtractData(id string, MatchDescription string) (data map[string]interface{
 	if err != nil {
 		return nil, err2
 	}
-
+	htmlStats := page.MustElement("#match-stats").MustHTML()
+	stats, err := ExtractPlayersStats(htmlStats)
+	if err != nil {
+		return nil, err
+	}
 	var summary map[string]interface{}
 	summary = map[string]interface{}{
 		"mapVetoes": mapsResponse,
 		"results":   dataResult,
+		"teamStats": stats,
 	}
 	return summary, nil
 }
 
 func ExtractMapsResult(html string) (list []models.MapResult, err error) {
 	data, err := ExtractMapsResultData(html)
+	if err != nil {
+		return nil, nil
+	}
+	return data, nil
+}
+
+func ExtractPlayersStats(html string) (list []models.TeamStats, err error) {
+	data, err := ExtractMapsStats(html)
 	if err != nil {
 		return nil, nil
 	}

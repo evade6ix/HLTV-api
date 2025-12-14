@@ -15,3 +15,17 @@ type MapResult struct {
 	Team1   TeamResult
 	Team2   TeamResult
 }
+
+type Player struct {
+	PlayerName string
+	KD         string
+	Swing      float64
+	ADR        float64
+	KAST       float64
+	Rating30   float64
+}
+
+type TeamStats struct {
+	TeamName     string
+	PlayersStats []Player
+}
