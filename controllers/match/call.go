@@ -15,7 +15,7 @@ func GetMatchData(c *gin.Context) {
 		})
 		return
 	}
-	maps, err := ExtractMatches()
+	maps, err := ExtractMaps()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

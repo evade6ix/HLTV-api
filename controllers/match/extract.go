@@ -2,49 +2,47 @@ package match
 
 import (
 	"hltv/models"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-func ExtractInfFromHTML(html string) (data []models.Match, err error) {
+func ExtractMapsVet(html string) (data []models.MapVeto, err error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return nil, err
 	}
 
-	var matches []models.Match
-	matches = []models.Match{}
-	doc.Find(".match-wrapper").Each(func(i int, s *goquery.Selection) {
+	var mapChoices []models.MapVeto
+	doc.Find(".padding").Each(func(i int, s *goquery.Selection) {
+		s.Children().Each(func(j int, item *goquery.Selection) {
+			text := strings.TrimSpace(item.Text())
+			text = strings.ReplaceAll(text, "\n", " ")
+			text = strings.Join(strings.Fields(text), " ")
 
-		teams := s.Find(".match-teamname")
-		if teams.Length() < 2 {
-			return
-		}
+			re := regexp.MustCompile(`^(\d+)\.\s+(.+?)\s+(removed|picked)\s+(.*)$`)
+			match := re.FindStringSubmatch(text)
 
-		eventContainer := s.Find(".match-event").First()
-		eventText := strings.TrimSpace(eventContainer.Clone().Children().Remove().End().Text())
-		stage := strings.TrimSpace(eventContainer.Find(".match-stage").Text())
+			if len(match) == 5 {
+				mapChoices = append(mapChoices, models.MapVeto{
+					TeamName:   match[2],
+					TeamChoice: match[3],
+					MapName:    match[4],
+				})
+				return
+			}
 
-		matchURL := ""
-		s.Find("a[href^=\"/matches/\"]").EachWithBreak(func(_ int, a *goquery.Selection) bool {
-			matchURL, _ = a.Attr("href")
-			return false
+			reLeft := regexp.MustCompile(`^(.*?)\s+was left over$`)
+			left := reLeft.FindStringSubmatch(text)
+			if len(left) == 2 {
+				mapChoices = append(mapChoices, models.MapVeto{
+					TeamChoice: "decider",
+					MapName:    left[1],
+				})
+			}
 		})
-
-		match := models.Match{
-			MatchID:  s.AttrOr("data-match-id", ""),
-			Event:    eventText,
-			Stage:    stage,
-			TeamA:    strings.TrimSpace(teams.Eq(0).Text()),
-			TeamB:    strings.TrimSpace(teams.Eq(1).Text()),
-			BO:       strings.TrimSpace(s.Find(".match-meta").Last().Text()),
-			IsLive:   s.AttrOr("live", "false") == "true",
-			MatchURL: matchURL,
-		}
-
-		matches = append(matches, match)
 	})
 
-	return matches, nil
+	return mapChoices, nil
 }
