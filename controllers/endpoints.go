@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	heatmapmatch "hltv/controllers/HeatMapMatch"
 	livenow "hltv/controllers/liveNow"
 	mapstats "hltv/controllers/mapStats"
 	"hltv/controllers/match"
@@ -16,4 +17,5 @@ func HLTVendpoints(router *gin.RouterGroup) {
 	router.GET("/last-results", results.CallResults)
 	router.POST("/match", match.GetMatchData)
 	router.POST("/match-stats", mapstats.GetMapStats)
+	router.POST("/heat-map", heatmapmatch.CallHeatMapMatch)
 }
