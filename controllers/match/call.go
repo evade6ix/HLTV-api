@@ -6,21 +6,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Match struct {
+	MatchId          string `json:"matchid"`
+	MatchDescription string `json:"matchDescription"`
+}
+
 func GetMatchData(c *gin.Context) {
-	MatchId := c.Query("matchid")
-	MatchDescription := c.Query("matchDescription")
-	if MatchId == "" || MatchDescription == "" {
+	var raw Match
+	if err := c.ShouldBindJSON(&raw); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Required parameters missing",
+			"error": err.Error(),
 		})
 		return
 	}
-	maps, err := ExtractMaps()
+	data, err := ExtractData(raw.MatchId, raw.MatchDescription)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	c.JSON(http.StatusOK, maps)
+
+	c.JSON(http.StatusOK, data)
 }

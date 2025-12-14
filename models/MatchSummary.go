@@ -5,6 +5,13 @@ type MapVeto struct {
 	MapName    string
 	TeamChoice string
 }
-type MatchSummary struct {
-	MapChoices []MapVeto
+
+type TeamResult struct {
+	TeamName string
+	WonMaps  int
+}
+type MapResult struct {
+	MapName string
+	Team1   TeamResult
+	Team2   TeamResult
 }

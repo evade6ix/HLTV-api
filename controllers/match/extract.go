@@ -8,6 +8,48 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+func ExtractMapsResultData(html string) (data []models.MapResult, err error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		return nil, err
+	}
+
+	doc.Find(".flexbox-column .mapholder").Each(func(i int, mapholder *goquery.Selection) {
+
+		var result models.MapResult
+
+		result.MapName = strings.TrimSpace(
+			mapholder.Find(".mapname").First().Text(),
+		)
+
+		left := mapholder.Find(".results-left").First()
+		result.Team1.TeamName = strings.TrimSpace(
+			left.Find(".results-teamname").First().Text(),
+		)
+
+		if left.HasClass("won") {
+			result.Team1.WonMaps = 1
+		} else {
+			result.Team1.WonMaps = 0
+		}
+
+		right := mapholder.Find(".results-right").First()
+		result.Team2.TeamName = strings.TrimSpace(
+			right.Find(".results-teamname").First().Text(),
+		)
+
+		if right.HasClass("won") {
+			result.Team2.WonMaps = 1
+		} else {
+			result.Team2.WonMaps = 0
+		}
+
+		data = append(data, result)
+	})
+
+	return data, nil
+}
+
 func ExtractMapsVet(html string) (data []models.MapVeto, err error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {

@@ -10,11 +10,11 @@ import (
 	"github.com/go-rod/stealth"
 )
 
-func ExtractMaps() (list []models.MapVeto, err error) {
+func ExtractData(id string, MatchDescription string) (data map[string]interface{}, err error) {
 	web := webclient.StartWebclient()
 	defer web.MustClose()
 	page := stealth.MustPage(web)
-	url := fmt.Sprintf("https://www.hltv.org/matches/2388129/faze-vs-natus-vincere-starladder-budapest-major-2025")
+	url := fmt.Sprintf(fmt.Sprintf("https://www.hltv.org/matches/%v/%v", id, MatchDescription))
 	page.MustNavigate(url)
 	err = rod.Try(func() {
 		page.Timeout(5 * time.Second).MustElement("body")
@@ -23,7 +23,26 @@ func ExtractMaps() (list []models.MapVeto, err error) {
 		return nil, fmt.Errorf("Body not load")
 	}
 	html := page.MustElement("body > div.bgPadding > div.widthControl > div:nth-child(2) > div.contentCol > div.match-page > div.g-grid.maps > div.col-6.col-7-small > div:nth-child(3) > div").MustHTML()
-	data, err := ExtractMapsVet(html)
+	mapsResponse, err1 := ExtractMapsVet(html)
+	if err1 != nil {
+		return nil, err1
+	}
+	htmlResult := page.MustElement("body > div.bgPadding > div.widthControl > div:nth-child(2) > div.contentCol > div.match-page > div.g-grid.maps > div.col-6.col-7-small > div.flexbox-column").MustHTML()
+	dataResult, err2 := ExtractMapsResultData(htmlResult)
+	if err != nil {
+		return nil, err2
+	}
+
+	var summary map[string]interface{}
+	summary = map[string]interface{}{
+		"mapVetoes": mapsResponse,
+		"results":   dataResult,
+	}
+	return summary, nil
+}
+
+func ExtractMapsResult(html string) (list []models.MapResult, err error) {
+	data, err := ExtractMapsResultData(html)
 	if err != nil {
 		return nil, nil
 	}
