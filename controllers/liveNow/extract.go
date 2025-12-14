@@ -8,6 +8,7 @@ import (
 )
 
 func ExtractInfFromHTML(html string) (data []models.Match, err error) {
+
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return nil, err

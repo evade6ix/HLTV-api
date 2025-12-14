@@ -23,8 +23,8 @@ func ExtractInfFromHTML(html string) (data []models.Match, err error) {
 		}
 
 		eventContainer := s.Find(".match-event").First()
-		stage := strings.TrimSpace(eventContainer.Find(".match-stage").Text())
 		eventText := strings.TrimSpace(eventContainer.Clone().Children().Remove().End().Text())
+		stage := strings.TrimSpace(eventContainer.Find(".match-stage").Text())
 
 		matchURL := ""
 		s.Find("a[href^=\"/matches/\"]").EachWithBreak(func(_ int, a *goquery.Selection) bool {
