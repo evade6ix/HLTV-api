@@ -18,42 +18,46 @@ func ExtractInfFromHTML(html string) (data []models.Results, err error) {
 	var matches []models.Results
 	matches = []models.Results{}
 	doc.Find(".results-sublist").Each(func(i int, s *goquery.Selection) {
+
 		headline := strings.Replace(s.Find(".standard-headline").Text(), "Results for", "", 1)
 		headline = strings.TrimSpace(headline)
-		fmt.Println("Group:", headline)
-		linkTag := s.Find("a.a-reset").First()
-		matchUrl, exists := linkTag.Attr("href")
-		if !exists {
-			matchUrl = ""
-		}
-		team1Name := s.Find(".team1 .team").First().Text()
-		team2Name := s.Find(".team2 .team").First().Text()
 
-		wonScoreStr := s.Find(".score-won").First().Text()
-		lostScoreStr := s.Find(".score-lost").First().Text()
+		s.Find(".result-con").Each(func(j int, r *goquery.Selection) {
+			linkTag := r.Find("a.a-reset").First()
+			matchUrl, exists := linkTag.Attr("href")
+			if !exists {
+				matchUrl = ""
+			}
 
-		wonScore, _ := strconv.Atoi(wonScoreStr)
-		lostScore, _ := strconv.Atoi(lostScoreStr)
+			team1Name := r.Find(".team1 .team").First().Text()
+			team2Name := r.Find(".team2 .team").First().Text()
 
-		event := s.Find(".event-name").First().Text()
-		bo := s.Find(".map-text").First().Text()
+			wonScoreStr := r.Find(".score-won").First().Text()
+			lostScoreStr := r.Find(".score-lost").First().Text()
 
-		match := models.Results{
-			MatchUrl: fmt.Sprintf("https://www.hltv.org/%v", matchUrl),
-			Team1: models.Team{
-				Name:    team1Name,
-				WonMaps: wonScore,
-			},
-			Date: headline,
-			Team2: models.Team{
-				Name:    team2Name,
-				WonMaps: lostScore,
-			},
-			Event: event,
-			BO:    bo,
-		}
+			wonScore, _ := strconv.Atoi(wonScoreStr)
+			lostScore, _ := strconv.Atoi(lostScoreStr)
 
-		matches = append(matches, match)
+			event := r.Find(".event-name").First().Text()
+			bo := r.Find(".map-text").First().Text()
+
+			match := models.Results{
+				MatchUrl: fmt.Sprintf("https://www.hltv.org/%v", matchUrl),
+				Team1: models.Team{
+					Name:    team1Name,
+					WonMaps: wonScore,
+				},
+				Date: headline,
+				Team2: models.Team{
+					Name:    team2Name,
+					WonMaps: lostScore,
+				},
+				Event: event,
+				BO:    bo,
+			}
+
+			matches = append(matches, match)
+		})
 	})
 
 	return matches, nil

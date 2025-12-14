@@ -22,6 +22,7 @@ func ExtractResults() (list []models.Results, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("Body not load")
 	}
+
 	html := page.MustElement("body > div.bgPadding > div.widthControl > div:nth-child(2) > div.contentCol > div.results > div.results-holder.allres > div.results-all").MustHTML()
 	data, err := ExtractInfFromHTML(html)
 	if err != nil {
