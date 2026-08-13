@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#080a09" />
+  <meta name="description" content="A live Counter-Strike match intelligence dashboard powered by the HLTV API." />
+  <title>STRATOS — Counter-Strike Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="Stratos home">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span>STRA<span>TOS</span></span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <button class="nav-link active" data-view="overview">Overview</button>
+      <button class="nav-link" data-view="matches">Matches</button>
+      <button class="nav-link" data-view="results">Results</button>
+    </nav>
+    <div class="top-actions">
+      <div class="api-state" id="apiState"><span></span> API online</div>
+      <button class="icon-button" id="refreshButton" aria-label="Refresh data" title="Refresh data">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M18.2 9A7 7 0 0 0 6.1 6.1L4 8m16 8-2.1 1.9A7 7 0 0 1 5.8 15"/></svg>
+      </button>
+      <button class="avatar" aria-label="Profile">E6</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div>
+        <div class="eyebrow"><span></span> LIVE MATCH INTELLIGENCE</div>
+        <h1>EVERY ROUND.<br/><em>ONE VIEW.</em></h1>
+        <p>Live Counter-Strike fixtures, scores and performance data distilled into one focused command center.</p>
+      </div>
+      <div class="hero-metric">
+        <span>DATA PULSE</span>
+        <div class="pulse-ring"><div><strong id="pulseValue">98</strong><small>%</small></div></div>
+        <p>Updated <b id="lastUpdated">just now</b></p>
+      </div>
+    </section>
+
+    <section class="stat-strip" aria-label="Dashboard summary">
+      <article><span>01</span><div><small>LIVE NOW</small><strong id="liveCount">—</strong></div><i class="green">ACTIVE</i></article>
+      <article><span>02</span><div><small>TODAY'S MATCHES</small><strong id="matchCount">—</strong></div><i>5 DAY WINDOW</i></article>
+      <article><span>03</span><div><small>RECENT RESULTS</small><strong id="resultCount">—</strong></div><i>LATEST FEED</i></article>
+      <article><span>04</span><div><small>API LATENCY</small><strong id="latency">—</strong></div><i class="green">HEALTHY</i></article>
+    </section>
+
+    <section class="content-section" id="liveSection">
+      <div class="section-head">
+        <div><span class="kicker">ON AIR</span><h2>LIVE MATCHES</h2></div>
+        <button class="text-button" data-jump="matches">View all matches <span>↗</span></button>
+      </div>
+      <div id="liveGrid" class="live-grid loading-grid"></div>
+    </section>
+
+    <section class="dashboard-grid">
+      <div class="content-section panel" id="matches">
+        <div class="section-head compact">
+          <div><span class="kicker">UP NEXT</span><h2>UPCOMING</h2></div>
+          <label class="date-control">DATE <input id="matchDate" type="date" /></label>
+        </div>
+        <div id="matchesList" class="match-list loading-grid"></div>
+      </div>
+
+      <aside class="content-section panel signal-panel">
+        <div class="section-head compact"><div><span class="kicker">FIELD NOTES</span><h2>SIGNAL</h2></div></div>
+        <div class="signal-visual">
+          <div class="radar"><i></i><i></i><i></i><span></span></div>
+          <div><strong>LIVE DATA</strong><small>Scraped at request time</small></div>
+        </div>
+        <ul class="signal-list">
+          <li><span>Coverage</span><b>HLTV public matches</b></li>
+          <li><span>Match window</span><b>Today + 5 days</b></li>
+          <li><span>Detail layer</span><b>Maps & player stats</b></li>
+          <li><span>Transport</span><b>REST / JSON</b></li>
+        </ul>
+        <a href="/swagger/index.html" class="outline-button">OPEN API CONSOLE <span>↗</span></a>
+      </aside>
+    </section>
+
+    <section class="content-section results-section" id="results">
+      <div class="section-head">
+        <div><span class="kicker">FINAL SCORE</span><h2>LATEST RESULTS</h2></div>
+        <div class="search-wrap"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="resultSearch" placeholder="Search team or event" /></div>
+      </div>
+      <div class="results-table-wrap">
+        <table>
+          <thead><tr><th>Match</th><th>Event</th><th>Format</th><th>Date</th><th></th></tr></thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="matchModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+      <div id="modalContent"></div>
+    </article>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <footer><div class="brand mini"><span class="brand-mark"><i></i><i></i><i></i></span><span>STRATOS</span></div><p>Independent match dashboard powered by the open-source HLTV API.</p><a href="https://github.com/evade6ix/HLTV-api">SOURCE ↗</a></footer>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
