@@ -15,12 +15,13 @@ func ExtractMatches(date string) (list []models.Match, err error) {
 	defer web.MustClose()
 	page := stealth.MustPage(web)
 	url := fmt.Sprintf("https://www.hltv.org/matches?selectedDate=%v-%v-%v", time.Now().Year(), int(time.Now().Month()), date)
-	page.MustNavigate(url)
 	err = rod.Try(func() {
-		page.Timeout(5 * time.Second).MustElement("body")
+		page.Timeout(30 * time.Second).MustNavigate(url)
+		page.MustWaitLoad()
+		page.MustElement("body")
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Body not load")
+		return nil, fmt.Errorf("HLTV page did not load: %w", err)
 	}
 	html := page.MustHTML()
 	data, err := ExtractInfFromHTML(html)
