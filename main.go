@@ -28,7 +28,12 @@ func main() {
 	dashboardFS, _ := fs.Sub(dashboard, "dashboard")
 	router.StaticFS("/assets", http.FS(dashboardFS))
 	router.GET("/", func(c *gin.Context) {
-		c.FileFromFS("index.html", http.FS(dashboardFS))
+		index, err := fs.ReadFile(dashboardFS, "index.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Dashboard unavailable")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", index)
 	})
 	router.Run(":8080")
 }
