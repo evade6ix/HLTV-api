@@ -34,7 +34,16 @@ func ExtractLiveNow(date string) (list []models.Match, err error) {
 	if emptyText != "" {
 		return nil, fmt.Errorf("No matches running now")
 	}
-	html := page.MustHTML()
+	var html string
+	err = rod.Try(func() {
+		html = page.Timeout(10 * time.Second).MustHTML()
+	})
+	if err != nil {
+		// Live matches are optional. HLTV sometimes leaves the live page in a
+		// loading state when no match is active; return an empty feed instead of
+		// allowing a slow live request to fail the whole dashboard.
+		return []models.Match{}, nil
+	}
 	data, err := ExtractInfFromHTML(html)
 	if err != nil {
 		return nil, nil
